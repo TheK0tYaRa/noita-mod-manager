@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <link rel="stylesheet" type="text/css" href="./home.css">
+    <title>Noita Mod Manager</title>
+</head>
+
+<body>
+
+    <button id="toggle-dark-mode">Toggle Dark Mode</button>
+    <button id="reset-to-system">Reset to System Theme</button>
+
+    <div id="playset">
+        <h3>Playset</h2>
+            <select>
+                <option>default</option>
+            </select>
+            <button>•••</button>
+    </div>
+    <input type="text" placeholder="Search...">
+    <button id="reset-mod-table">Refresh</button>
+    <table>
+        <thead>
+            <th>#</th>
+            <th>Name</th>
+            <th>Settings Fold</th>
+            <th>Enabled</th>
+        </thead>
+        <tbody id="mod-table">
+            <tr>
+                <td>1</td>
+                <td>Eba is besttt</td>
+                <td>2022-07-11</td>
+                <td><input type="checkbox" checked></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Tanksy is cuteeee</td>
+                <td>2022-07-11</td>
+                <td><input type="checkbox"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script src="./home_renderer.js"></script>
+</body>
+
+</html>

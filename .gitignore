@@ -1,3 +1,6 @@
+#not sure which package is creating this
+.dccache
+
 # Created by https://www.toptal.com/developers/gitignore/api/node,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,visualstudiocode
 
