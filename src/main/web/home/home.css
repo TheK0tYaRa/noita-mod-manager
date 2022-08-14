@@ -1,3 +1,7 @@
+* {
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
 @media (prefers-color-scheme: dark) {
     body {
         background: #333;
@@ -14,4 +18,13 @@
 
 input {
     margin: auto;
+}
+
+td {
+    min-height: 3em;
+    /* background-color: white; */
+}
+
+#empty {
+    background-color: white;
 }

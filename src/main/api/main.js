@@ -1,14 +1,19 @@
+"use strict";
+
 const { app, BrowserWindow } = require('electron');
-const { createWindow } = require("./controller/home_controller");
+const { createHomeWindow } = require("./home/controller");
+const logger = require('electron-log');
+require("./init/common");
 
 app.whenReady().then(() => {
-    createWindow();
+    let window = createHomeWindow();
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
+            createHomeWindow();
         }
     });
-}).catch(e => console.error(e));
+    window.webContents.openDevTools();
+}).catch(e => logger.error(e));
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

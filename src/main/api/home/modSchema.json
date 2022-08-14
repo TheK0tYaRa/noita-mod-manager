@@ -1,0 +1,14 @@
+{
+    "id": "0", // also index
+    "enabled": "0", // or "1"
+    "settings_fold_open": "0", // or "1"
+    "workshop_item_id": "12345656",
+    // if workshop_item_id !== "0"
+    // then it exists in the workshop directory or the internal mods folder
+    // extract the following
+    // BEGIN mod_details
+    "name": "Totally Original Mod", // overwrite the above
+    "description": "Totally Original Mod adds some needed QoL to Noita",
+    "cannot_be_disabled": true
+    // END mod_details
+}
