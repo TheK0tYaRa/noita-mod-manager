@@ -65,19 +65,21 @@ function bindMouse() {
         }
     }, true);
     document.addEventListener("dragend", e => {
-        // stop dragging
-        refRow.childNodes.forEach(td => {
-            td.style.backgroundColor = refColor;
-        });
-        refScreenY = null;
-        refColor = null;
-        refRow = null;
+        try {
+            // stop dragging
+            refRow.childNodes.forEach(td => {
+                td.style.backgroundColor = refColor;
+            });
+            refScreenY = null;
+            refColor = null;
+            refRow = null;
+        } catch (err) {
+            console.log(err);
+        }
     });
 
     document.addEventListener("selectstart", e => {
         e.preventDefault();
-        // window.getSelection().removeAllRanges();
-        // document.dispatchEvent("dragstart")
     })
 }
 

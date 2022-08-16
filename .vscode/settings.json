@@ -1,0 +1,33 @@
+{
+    "files.associations": {
+        "algorithm": "c",
+        "atomic": "c",
+        "cassert": "c",
+        "charconv": "c",
+        "chrono": "c",
+        "exception": "c",
+        "format": "c",
+        "forward_list": "c",
+        "functional": "c",
+        "iomanip": "c",
+        "istream": "c",
+        "list": "c",
+        "memory": "c",
+        "optional": "c",
+        "sstream": "c",
+        "streambuf": "c",
+        "thread": "c",
+        "type_traits": "c",
+        "vector": "c",
+        "xhash": "c",
+        "xlocale": "c",
+        "xlocbuf": "c",
+        "xlocmon": "c",
+        "xlocnum": "c",
+        "xloctime": "c",
+        "xmemory": "c",
+        "xstring": "c",
+        "xtr1common": "c",
+        "xutility": "c"
+    }
+}

@@ -7,5 +7,12 @@ contextBridge.exposeInMainWorld('darkMode', {
 
 contextBridge.exposeInMainWorld('modManager', {
 	getXmlMods: () => ipcRenderer.invoke('mod-manager:get-xml-mods'),
-	sendMods: (mods) => ipcRenderer.send('mod-manager:save-ui-mods', mods),
+	sendMods: (mods) => {
+		console.log(mods);
+		return ipcRenderer.send('mod-manager:save-ui-mods', mods)
+	},
+});
+
+contextBridge.exposeInMainWorld('logger', {
+	info: (...params) => ipcRenderer.send('logger:info', ...params),
 });

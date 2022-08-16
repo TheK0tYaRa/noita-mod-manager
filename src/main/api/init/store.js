@@ -13,8 +13,8 @@ var workshopPath = path.join(steam, "steamapps\\workshop\\content\\881100");
 var defaultNoitaModPath = path.join(steam, "steamapps\\common\\Noita\\mods");
 
 store.set("noita", {
-    "userData": path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita"),
-    // added a couple up-dirs for no good reason
+    "modConfig": path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita/save00/mod_config.xml"),
+    "sharedConfig": path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita/save_shared/config.xml"),
     "modLocations": {
         "workshopMods": workshopPath,
         "localMods": defaultNoitaModPath,
