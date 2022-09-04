@@ -1,6 +1,6 @@
 {
 	"name": "noita-mod-manager",
-	"version": "1.0.1",
+	"version": "1.0.1-alpha",
 	"description": "Manage mods for Noita",
 	"main": "src/main/api/main.js",
 	"scripts": {
