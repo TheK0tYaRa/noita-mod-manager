@@ -1,4 +1,4 @@
-const { ipcMain, nativeTheme } = require('electron');
+import { ipcMain, nativeTheme } from "electron";
 
 /**
  * Common ipcMain handlers

@@ -101,9 +101,7 @@ function modTableToJson() {
 }
 
 function sendMods() {
-    console.log("starting");
     const mods = modTableToJson();
-    console.log(mods);
     window.modManager.sendMods(mods)
 }
 

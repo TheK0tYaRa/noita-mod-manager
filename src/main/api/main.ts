@@ -1,9 +1,8 @@
-"use strict";
 
-const { app, BrowserWindow } = require('electron');
-const { createHomeWindow } = require("./home/main");
-const logger = require('electron-log');
-require("./init/common");
+import { app, BrowserWindow } from 'electron';
+import { createHomeWindow } from "./home";
+import logger from 'electron-log';
+require("./init");
 
 app.whenReady().then(() => {
     let window = createHomeWindow();
