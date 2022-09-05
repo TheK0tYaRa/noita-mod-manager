@@ -29,7 +29,7 @@ function bindMouse() {
     let multiplyDragSpeedEvery = 4;
 
     document.addEventListener("drag", e => {
-        if (refScreenY != null && e.buttons != 0) {
+        if (refScreenY != null && e.buttons != 0 && e.clientY < window.height - 1 && e.clientY > 1) {
             let difference = Math.abs(e.screenY - refScreenY);
             // determine direction relative to initial clientY
             let direction = e.screenY - refScreenY > 0 ? 1 : -1
@@ -79,8 +79,10 @@ function bindMouse() {
     });
 
     document.addEventListener("selectstart", e => {
+        // prevent highlighting descriptions, titles, etc
+        // this blocks dragging unnecessarily.
         e.preventDefault();
-    })
+    });
 }
 
 function dragTimeStepElapsed(timeFirst, timeStep) {
@@ -111,18 +113,6 @@ function getClosestRowInTableBody(modTable, yPos) {
         }
     }
     return closestChild;
-}
-
-function isDirectChildOf(parent, child) {
-    return indexOfChild(parent, child) > -1;
-}
-
-function indexOfChild(parent, child) {
-    let nodes = parent.childNodes;
-    for (let i = 0; i < nodes.length; i++) {
-        if (nodes[i] === child) return i;
-    }
-    return -1;
 }
 
 bindMouse();
