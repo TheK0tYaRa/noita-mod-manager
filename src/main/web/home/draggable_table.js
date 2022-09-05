@@ -85,22 +85,6 @@ function bindMouse() {
     });
 }
 
-function dragTimeStepElapsed(timeFirst, timeStep) {
-    return timeFirst && new Date().getTime - timeFirst > timeStep;
-}
-
-function dragScollOnRange(e, ranges) {
-    let y = e.clientY;
-    for (let range of ranges) {
-        let to = range.to * window.innerHeight;
-        let from = range.from * window.innerHeight;
-        if (y >= from && y < to) {
-            range.call(e);
-            break;
-        }
-    }
-}
-
 function getClosestRowInTableBody(modTable, yPos) {
     let closestChild = null;
     let closestValue = Number.MAX_VALUE;
