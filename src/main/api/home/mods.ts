@@ -1,55 +1,56 @@
 import logger from 'electron-log';
 import fs from 'fs';
+import fsPromises from 'fs/promises';
 import path from 'path';
 import convert from 'xml-js';
 import { readPresetFile } from './presets';
+import { Mod } from './index';
 
-interface Mod {
-    name: string
-    mod_id: string
-    description: string
-    enabled: string
-    is_game_mode: string
-    request_no_api_restrictions: string
-    workshop_item_id: string
-    settings_fold_open: string
-    mod_path: string
+export async function getModList(modConfigPath: string, ...paths: string[]): Promise<Mod[]> {
+    // read modconfig first, maintain this ordering
+    return readPresetFile(modConfigPath).then(modSettings => {
+        let modList = modSettings.map(interpretAsMod);
+        if (modList.length == 0) {
+            logger.warn(`Mod list not found in ${modConfigPath}`);
+        } else {
+            let mapping = generatePartialMapping(paths);
+            modList.forEach(mod => {
+                let modRef = mapping[mod.mod_id];
+                if (modRef) {
+                    mod.name = modRef.name;
+                    mod.description = modRef.description;
+                    mod.mod_path = modRef.mod_path;
+                    mod.is_game_mode = modRef.is_game_mode;
+                    mod.request_no_api_restrictions = modRef.request_no_api_restrictions;
+                    mod.workshop_item_id = modRef.workshop_item_id;
+                }
+            });
+        }
+        return modList;
+    }).catch(err => {
+        logger.error(err);
+        return [];
+    });
 }
 
-async function getEnabledMods(modConfigPath: string): Promise<Mod> {
-    let mods = await readPresetFile(modConfigPath);
-    let obj: Mod = createModObj("", "", "");
-    mods.forEach((m: Mod) => {
-        obj[m.name] = {
-            "enabled": m.enabled,
-            "settings_fold_open": m.settings_fold_open
-        };
+function generatePartialMapping(paths: string[]): object {
+    let modPaths = paths.flatMap(p => fs.readdirSync(p)
+        .map(f => path.join(p, f)))
+        .filter(fi => fs.lstatSync(fi).isDirectory());
+    let obj = {};
+    modPaths.forEach(p => {
+        let mod = parseModDirectory(p);
+        obj[mod.mod_id] = mod;
     });
     return obj;
 }
 
-async function getModList(modConfigPath: string, ...paths: string[]): Promise<Mod[]> {
-    let mods = paths?.flatMap(p => fs.readdirSync(p)
-        .map(f => path.join(p, f)))
-        .filter(fi => fs.lstatSync(fi).isDirectory());
-
-    if (mods.length == 0) {
-        logger.warn(`no found mods`);
-        return [
-            createModObj("No mods found", "Please configure your settings manually.", "")
-        ];
-    } else {
-        // mods = mods.map(parseModDirectory);
-        let modList = mods.map(parseModDirectory);
-        let modsEnabledObject = await getEnabledMods(modConfigPath);
-        for (let index in modList) {
-            let val = modsEnabledObject[modList[index].mod_id];
-            modList[index]["enabled"] = val.enabled;
-            modList[index]["settings_fold_open"] = val.settings_fold_open;
-        }
-        logger.info(`found ${modList.length} mods`);
-        return modList;
-    }
+function interpretAsMod(obj: object): Mod {
+    let mod = createModObj("", "", "");
+    mod.mod_id = obj["name"] ?? "Name not found";
+    mod.enabled = obj["enabled"] ?? "0";
+    mod.settings_fold_open = obj["settings_fold_open"] ?? "0";
+    return mod;
 }
 
 function parseModDirectory(pathlike: string) {
@@ -81,12 +82,12 @@ function createModObj(name: string, description: string, pathlike: string): Mod 
         name: name,
         mod_id: "",
         description: description,
+        mod_path: pathlike,
         enabled: "0",
         is_game_mode: "0",
         request_no_api_restrictions: "0",
         workshop_item_id: "0",
         settings_fold_open: "0",
-        mod_path: pathlike
     };
 }
 
@@ -95,45 +96,32 @@ function modToXml(mod: Mod): string {
 }
 
 function modListToXml(modList: Mod[]): string {
-    let doc = ""
-    for (let mod of modList) {
-        doc += `\t${modToXml(mod)}\n`;
-    }
-    return `<Mods>\n${doc}\n</Mods>`;
+    return `<Mods>\n\t${modList.map(mod => modToXml(mod)).join("\n\t")}\n</Mods>`;
 }
 
-function saveUIModList(modConfigPath: string, modList: Mod[]) {
-    logger.info(`saving to ${modConfigPath}`);
-    let xml_string = modListToXml(modList)
-    fs.writeFileSync(modConfigPath, xml_string, { encoding: 'utf-8' });
+export async function saveMods(savePath: string, modList: Mod[]) {
+    return fsPromises.writeFile(savePath, modListToXml(modList), { "encoding": "utf8" })
+        .then(() => {
+            logger.info(`saved to ${savePath}`);
+        }).catch(err => {
+            logger.error(err);
+            throw err;
+        });
 }
 
-async function saveMods(save_path: string, shared_config_path: string, mods: Mod[]) {
-    let backup = path.resolve(path.dirname(save_path), "mod_config.xml.BACKUP");
-    confirmBackup(save_path, backup);
-    saveUIModList(save_path, mods);
-    if (mods.filter(m => m.request_no_api_restrictions === "1").length > 0) {
-        // ensure unsafe mods can be enabled for next boot
-        let data = fs.readFileSync(shared_config_path, { encoding: "utf-8" });
-        let json = JSON.parse(convert.xml2json(data, { compact: true }));
-        json["Config"]["_attributes"]["mods_disclaimer_accepted"] = "1";
-        json["Config"]["_attributes"]["mods_sandbox_enabled"] = "0";
-        json["Config"]["_attributes"]["mods_sandbox_warning_done"] = "1";
-
-        data = convert.json2xml(json, { compact: true }).replace(/ /g, '\n');
-        fs.writeFileSync(shared_config_path, data, { encoding: "utf-8" });
-    }
-}
-
-function confirmBackup(source: string, backup: string) {
-    if (fs.existsSync(source) && !fs.existsSync(backup)) {
-        fs.copyFileSync(source, backup, fs.constants.COPYFILE_EXCL);
-    }
-}
-
-export {
-    getEnabledMods,
-    getModList,
-    saveUIModList,
-    saveMods
+export async function enableUnsafeMods(sharedConfigPath: string): Promise<boolean> {
+    return fsPromises.readFile(sharedConfigPath, { encoding: "utf8" })
+        .then(async data => {
+            let json = JSON.parse(convert.xml2json(data, { compact: true }));
+            json["Config"]["_attributes"]["mods_disclaimer_accepted"] = "1";
+            json["Config"]["_attributes"]["mods_sandbox_enabled"] = "0";
+            json["Config"]["_attributes"]["mods_sandbox_warning_done"] = "1";
+            let xml = convert.json2xml(json, { compact: true }).replace(/ /g, '\n');
+            return fsPromises.writeFile(sharedConfigPath, xml, { encoding: "utf-8" })
+                .then(() => true);
+        })
+        .catch(err => {
+            logger.error(err);
+            return false;
+        });
 }

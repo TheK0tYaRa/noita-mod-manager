@@ -11,20 +11,18 @@
 </head>
 
 <body>
-
-    <button id="toggle-dark-mode">Toggle Dark Mode</button>
-    <button id="reset-to-system">Reset to System Theme</button>
-
-    <div id="playset">
-        <h3>(TODO) Playset</h2>
-            <select>
+    <div id="playset-holder">
+        <button id="toggle-dark-mode"><img src="./resources/brightness-high.svg" /></button>
+        <div>
+            <h5>Selected Playset</h5>
+            <select id="select-preset">
                 <option>default</option>
             </select>
-            <button>•••</button>
+        </div>
     </div>
-    <input type="text" placeholder="Search...">
+    <input id="search-mods" type="text" placeholder="Search...">
     <button id="reset-mod-table">Refresh</button>
-    <button id="send-mod-table">Save</button>
+    <button id="save-mod-table">Save Preset</button>
     <table>
         <thead>
             <tr id="headers">
@@ -38,8 +36,9 @@
             <tr modid="empty-mod"></tr>
         </tbody>
     </table>
-    <script src="./home.js"></script>
-    <script src="./draggable_table.js"></script>
+    <script src="./modLoading.js"></script>
+    <script src="./draggableTable.js"></script>
+    <script src="./themeHandler.js"></script>
 </body>
 
 </html>

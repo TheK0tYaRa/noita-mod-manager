@@ -1,57 +1,61 @@
 import path from "path";
 import Store from "electron-store";
 import logger from "electron-log";
-import fs from "fs";
-
-const store = new Store<NoitaStore>();
+import fsPromises from "fs/promises";
 
 type NoitaStore = {
+    steamDirectory: string,
+    noitaData: string,
     modConfig: string,
     sharedConfig: string,
     modLocations: string[],
     presetsFolder: string,
-    lastPreset: string,
+    currentPreset: string,
 };
 
-function initializeStore(): void {
-    var steam = findSteam();
-    var workshopPath = path.join(steam, "steamapps/workshop/content/881100");
-    var defaultNoitaModPath = path.join(steam, "steamapps/common/Noita/mods");
-    store.set("modConfig", path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita/save00/mod_config.xml"));
-    store.set("sharedConfig", path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita/save_shared/config.xml"));
+export const store = new Store<NoitaStore>();
+if (!store.get("steamDirectory", undefined)) {
+    let steam = path.join("C:/Program Files (x86)/Steam");
+    initializeSteam(steam);
+}
+if (!store.get("noitaData", undefined)) {
+    let noitaData = path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita");
+    initializeDataStore(noitaData);
+    initializePresets(noitaData);
+}
+
+function initializeSteam(steam: string) {
+    store.set("steamDirectory", steam);
+    let workshopPath = path.join(steam, "steamapps/workshop/content/881100");
+    let defaultNoitaModPath = path.join(steam, "steamapps/common/Noita/mods");
     store.set("modLocations", [workshopPath, defaultNoitaModPath]);
-    initializePresets();
 }
 
-function findSteam(): string {
-    var steamPath = path.join("C:/Program Files (x86)/Steam");
-    return steamPath;
+function initializeDataStore(noitaData: string) {
+    store.set("noitaData", noitaData);
+    store.set("modConfig", path.join(noitaData, "save00/mod_config.xml"));
+    store.set("sharedConfig", path.join(noitaData, "save_shared/config.xml"));
 }
 
-function initializePresets(): void {
+function initializePresets(noitaData: string): void {
+    let presetsFolder = store.get("presetsFolder", undefined);
     // ensure key is present and is real: preset folder 
-    let presetsFolder = store.get("presetsFolder");
-    if (presetsFolder == null) {
-        presetsFolder = path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita/mod_presets");
+    if (presetsFolder === undefined) {
+        presetsFolder = path.join(noitaData, "mod_presets");
         store.set("presetsFolder", presetsFolder);
     }
-    if (!fs.existsSync(presetsFolder)) {
-        fs.mkdir(presetsFolder, () => logger.info(`created presets folder ${presetsFolder}`));
-    }
-
-    // ensure key is present and is real: last preset (last used mod_config.xml)
-    let lastSelectedPreset = store.get("lastPreset");
-    if (lastSelectedPreset == null) {
-        lastSelectedPreset = path.join(process.env.APPDATA, "../LocalLow/Nolla_Games_Noita/save00/mod_config.xml");
-        if (fs.existsSync(lastSelectedPreset)) { // back this up to presets folder
-            fs.copyFileSync(lastSelectedPreset, path.join(presetsFolder, "default.xml"));
-            store.set("presetsFolder", path.join(presetsFolder, "default.xml"));
-        }
-    }
+    fsPromises.mkdir(presetsFolder)
+        .catch((err: Error) => {
+            if (!err.message.includes("file already exists, mkdir"))
+                throw err; // rethrow unexpected errors
+        })
+        .finally(async () => {
+            // folder did not previously exist, copy mod_config.xml over
+            // ensure key is present and is real: lastPreset (last used mod_config.xml)
+            let lastSelectedPreset = path.join(noitaData, "save00/mod_config.xml");
+            let nextSelectedPreset = path.join(presetsFolder, "default.xml");
+            store.set("currentPreset", "default");
+            fsPromises.copyFile(lastSelectedPreset, nextSelectedPreset)
+                .catch(err => logger.error(err));
+        });
 }
-
-if (store.get("modConfig", undefined) === undefined) {
-    initializeStore();
-}
-
-export { store };
