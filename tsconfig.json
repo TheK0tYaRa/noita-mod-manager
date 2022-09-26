@@ -15,7 +15,6 @@
     },
     "include": [
         "src/**/*.ts",
-        "src/main/web/home/home.ts"
     ],
     "exclude": [
         "node_modules",

@@ -1,7 +1,6 @@
 'use strict';
 
 let loadedMods;
-let objRef;
 // mod handling
 (async function () {
     let presets = await window.modManager.getPresets();
@@ -13,18 +12,7 @@ let objRef;
     window.logger.info(`${loadedMods.length} mods loaded.`);
 
     // initialize presets
-    const selector = document.getElementById("select-preset");
-    while (selector.firstChild) {
-        selector.removeChild(selector.firstChild);
-    }
-    presets.forEach(preset => {
-        let option = document.createElement("option");
-        option.value = preset;
-        option.innerText = preset;
-        option.selected = preset === currentPresetName;
-        selector.appendChild(option);
-    });
-    document.getElementById("playset").innerText = currentPresetName;
+    populatePresetOptions(presets, currentPresetName);
 
     // search by title and description, case insensitivite
     document.getElementById("search-mods").addEventListener("input", (e) => {
@@ -48,37 +36,52 @@ let objRef;
         }).catch(err => window.logger.error(err));
     });
 
-    document.getElementById("select-preset").addEventListener("change", async e => {
-        currentPresetName = selector.value;
-        document.getElementById("playset").innerText = currentPresetName;
+    document.getElementById("load-selector").addEventListener("change", async e => {
+        currentPresetName = e.target.value;
         await onPresetChange(currentPresetName).catch(err => window.logger.error(err));
     });
 
     // register electron callbacks
     window.registerCallback.reloadModTable(populateTableMods);
+    window.registerCallback.reloadPresets(populatePresetOptions);
 
-    objRef = {};
-    loadedMods.forEach(mod => objRef[mod.mod_id] = mod);
-    // update loaded mods whenever a drag completes
-    document.addEventListener("dragend", e => {
+    // enable/disable all
+    document.getElementById("set-all-presets").addEventListener("change", e => {
+        let checked = e.target.checked;
+        Array.from(document.querySelectorAll("tbody>tr>td:last-child>input")).forEach(input => {
+            if (!input.disabled) {
+                input.checked = checked;
+                input.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+
+    document.getElementById("mod-table").addEventListener("draggableTable:dragend", e => {
         let mods = modTableToJson();
         // find the first and second index swapped
         let bools = Array(loadedMods.length).fill().map((_i, j) => j).map(i => loadedMods[i].mod_id === mods[i].mod_id);
         let firstIndex = bools.indexOf(false);
         let secondIndex = bools.lastIndexOf(false);
 
-        // no changes
         if (firstIndex === -1) {
+            // no changes
             return;
-        } else if (secondIndex - firstIndex == 1 || loadedMods[firstIndex + 1].mod_id === mods[firstIndex].mod_id) { // 1-mod movement or mod moved down
+        } else if (secondIndex - firstIndex == 1 || loadedMods[firstIndex + 1].mod_id === mods[firstIndex].mod_id) {
+            // 1-mod movement or mod moved down
             let movedMod = loadedMods.splice(firstIndex, 1)[0];
             loadedMods.splice(secondIndex, 0, movedMod);
-        } else { // moved mod up
+        } else {
+            // moved mod up
             let movedMod = loadedMods.splice(secondIndex, 1)[0];
             loadedMods.splice(firstIndex, 0, movedMod);
         }
+        // update mod_config.xml
+        window.modManager.save(loadedMods);
     });
 })();
+
+function initializePresetSelector(presets, currentPresetName, loadSelector) {
+}
 
 function populateTableMods(mods) {
     // clear table
@@ -180,20 +183,21 @@ async function onPresetChange(preset) {
 
 async function savePreset(mods, presetName) {
     window.modManager.savePresetAs(presetName, mods);
-    const select = document.getElementById("select-preset");
-    select.childNodes.forEach(node => {
-        node.selected = false;
+    document.getElementsByName("preset-loader").forEach(select => {
+        select.childNodes.forEach(node => {
+            node.selected = false;
+        });
+        const option = document.createElement("option");
+        option.value = presetName;
+        option.innerText = preset;
+        option.selected = true;
+        select.appendChild(option);
     });
-    const option = document.createElement("option");
-    option.value = presetName;
-    option.innerText = preset;
-    option.selected = true;
-    select.appendChild(option);
 }
 
 function deletePreset(presetName) {
     window.modManager.deletePreset(presetName);
-    const select = document.getElementById("select-preset");
+    const select = document.getElementById("preset-loader");
     select.childNodes.forEach(node => {
         node.selected = false;
         if (node.value === presetName) {
@@ -201,4 +205,21 @@ function deletePreset(presetName) {
         }
     });
     select.options[0].selected = true;
+}
+
+async function populatePresetOptions(presets, currentPreset) {
+    console.log("presets refreshed")
+    document.getElementsByName("preset-selector").forEach(presetSelector => {
+        while (presetSelector.firstChild) {
+            presetSelector.removeChild(presetSelector.firstChild);
+        }
+
+        presets.forEach(preset => {
+            let option = document.createElement("option");
+            option.value = preset;
+            option.innerText = preset;
+            option.selected = preset === currentPreset;
+            presetSelector.appendChild(option);
+        });
+    });
 }

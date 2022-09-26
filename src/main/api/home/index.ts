@@ -23,6 +23,6 @@ export function createHomeWindow(): BrowserWindow {
             preload: path.join(__dirname, 'ipcRenderer.js'),
         }
     });
-    win.loadFile('src/main/web/home/home.html');
+    win.loadFile('src/main/web/modViewer/modViewer.html');
     return win;
 }

@@ -52,34 +52,45 @@ ipcMain.on('mod-manager:save-preset', (_event, mods: Mod[]) => {
     savePresetAs(store.get("currentPreset"), mods);
 });
 
-ipcMain.on('mod-manager:new-preset', (_event, presetName: string, mods: Mod[]) => {
+ipcMain.on('mod-manager:new-preset', async (_event, presetName: string, mods: Mod[]) => {
     if (mods == null || mods.length == 0) {
         logger.error(`mods not transmitted during event: ${_event}`);
         return;
     }
-    savePresetAs(presetName, mods);
+    await savePresetAs(presetName, mods);
     store.set("currentPreset", presetName);
+    _event.sender.send("mod-manager:presets-updated", await getPresetNames(store.get("presetsFolder")), presetName);
 });
 
-ipcMain.on('mod-manager:delete-preset', (_event, presetName: string) => {
-    deletePreset(store.get("presetsFolder"), presetName);
+
+ipcMain.on('mod-manager:delete-preset', async (_event, presetName: string) => {
+    const modPresetsFolder = store.get("presetsFolder");
+    await deletePreset(modPresetsFolder, presetName).then(async _ok => {
+        _event.sender.send("mod-manager:presets-updated", await getPresetNames(modPresetsFolder), "");
+    });
 });
 
-function savePresetAs(presetName: string, mods: Mod[]) {
+async function savePresetAs(presetName: string, mods: Mod[]) {
     let presetsFolder = store.get("presetsFolder");
     let modConfig = store.get("modConfig");
     let sharedConfig = store.get("sharedConfig");
-    // update both preset files: mod_config.xml, the actual preset
-    saveMods(modConfig, mods).then(async ok => {
-        await savePreset(presetsFolder, presetName, modConfig)
-            .then(() => {
-                logger.info(`Updated preset ${presetName}`);
-            }).catch(err => logger.error(err));
-    }).catch(err => logger.error(err));
     // update the shared_config.xml file if unsafe mods must be used
     if (mods.filter(m => m.request_no_api_restrictions === "1").length > 0) {
         enableUnsafeMods(sharedConfig);
     }
-}
 
-logger.info("ipcmain finished")
+    // update both preset files: mod_config.xml, the actual preset
+    return saveMods(modConfig, mods).then(async ok => {
+        await savePreset(presetsFolder, presetName, modConfig)
+            .then(() => {
+                logger.info(`Updated preset ${presetName}`);
+                return true;
+            }).catch(err => {
+                logger.error(err);
+                return false;
+            });
+    }).catch(err => {
+        logger.error(err);
+        return false;
+    });
+}

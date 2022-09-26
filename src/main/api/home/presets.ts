@@ -95,12 +95,16 @@ export async function savePreset(presetsFolder: string, presetName: string, base
     });
 }
 
-export async function deletePreset(presetsFolder: string, presetName: string) {
+export async function deletePreset(presetsFolder: string, presetName: string): Promise<boolean> {
     return getPresetFile(presetsFolder, presetName)
-        .then(file => {
+        .then(async file => {
             logger.info(`Deleting preset ${presetName}`);
-            fsPromises.unlink(file);
-        }).catch(err => logger.error(err));
+            await fsPromises.unlink(file);
+            return true;
+        }).catch(err => {
+            logger.error(err);
+            return false;
+        });
 }
 
 function abbreviatePreset(presetFile: string) {

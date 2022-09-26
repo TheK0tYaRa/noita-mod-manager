@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <link rel="stylesheet" type="text/css" href="./modViewer.css">
+    <title>Noita Mod Manager</title>
+</head>
+
+<body>
+    <div class="flex topdiv">
+        <button id="toggle-dark-mode" class="no-background"><img src="./resources/brightness-high.svg" /></button>
+        <div class="flex">
+            <h4>Playset</h4>
+            <select id="load-selector" name="preset-selector" class="left-margin-1em no-background">
+                <option>default</option>
+            </select>
+            <div>
+                <input id="rename-preset" type="text" />
+                <button id="rename-preset-button" class="no-background"><img src="./resources/pencil-square.svg" /></button>
+            </div>
+            <div>
+                <input id="duplicate-preset" type="text" />
+                <button id="duplicate-preset-button">Duplicate Preset</button>
+            </div>
+            <button id="delete-preset">Delete Preset</button>
+        </div>
+    </div>
+    <input id="search-mods" type="text" placeholder="Search...">
+    <button id="reset-mod-table">Refresh</button>
+    <button id="save-mod-table">Save Preset</button>
+    <table>
+        <thead>
+            <tr id="headers">
+                <th>#</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Enabled<input type="checkbox" id="set-all-presets" /></th>
+            </tr>
+        </thead>
+        <tbody id="mod-table">
+            <tr modid="empty-mod"></tr>
+        </tbody>
+    </table>
+    <script src="./themeHandler.js"></script>
+    <script src="./modInitialization.js"></script>
+    <script src="./modConfiguration.js"></script>
+    <script src="./draggableTable.js"></script>
+</body>
+
+</html>

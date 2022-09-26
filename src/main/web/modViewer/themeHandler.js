@@ -17,5 +17,4 @@
         button.removeChild(button.firstChild);
         button.appendChild(nextImage);
     });
-
 })();

@@ -55,6 +55,11 @@
             refRow.childNodes.forEach(td => {
                 td.style.backgroundColor = refColor;
             });
+
+            // fire a custom event so others using this table might handle the change directly
+            refRow.dispatchEvent(new Event("draggableTable:dragend", {bubbles: true, cancelable: true}));
+            e.stopPropagation();
+
             refScreenY = null;
             refColor = null;
             refRow = null;

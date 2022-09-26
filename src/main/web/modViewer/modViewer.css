@@ -34,39 +34,61 @@ body {
     margin: 0;
     padding: 0.5em;
     overflow: auto;
-
-    scrollbar-width: thin;
-    scrollbar-track-color: #222;
 }
 
-#playset-holder {
+.flex {
     display: flex;
+}
+
+.topdiv {
     flex-direction: row-reverse;
     justify-content: space-between;
     align-content: center;
-    padding: 0;
-    margin: 0;
+    margin-bottom: 0.5em;
 }
 
-button#toggle-dark-mode {
-    /* remove styling, except the border */
+button {
+    margin-left: 0.5em;
+}
+
+button.no-background {
     border-style: none;
+}
+
+option {
+    border-width: 1px;
+    border-radius: 1em;
+}
+
+.no-background {
+    /* remove styling, except the border */
     background: none;
+    background-color: inherit;
     color: inherit;
     padding: 0;
 }
 
+.left-margin-1em {
+    margin-left: 1em;
+}
+
 table {
     width: 100%;
+    padding: 0.5em;
 }
 
 tbody>tr:nth-child(odd) {
     background-color: rgba(127, 127, 127, 0.25);
 }
 
-h5, h3, div {
+thead {
+    background-color: rgba(127, 127, 127, 0.5);
+}
+
+h4 {
     margin: 0;
     padding: 0;
+    padding-top: 0.25em;
 }
 
 th,
