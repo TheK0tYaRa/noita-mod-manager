@@ -67,7 +67,12 @@ function parseModDirectory(pathlike: string) {
 
     filepath = path.join(pathlike, "mod.xml");
     if (fs.existsSync(filepath)) {
-        let data = JSON.parse(convert.xml2json(fs.readFileSync(filepath, { encoding: 'utf-8' }), { compact: true }))["Mod"]["_attributes"];
+        let data = JSON.parse(convert.xml2json(fs.readFileSync(filepath, { encoding: 'utf-8' }), { compact: true }));
+        try {
+            data = data["Mod"]["_attributes"]
+        } catch {
+            data = data["mod"]["_attributes"]
+        }
         mod.name = data?.name;
         mod.description = data?.description;
         mod.request_no_api_restrictions = data?.request_no_api_restrictions === "1" ? "1" : "0";
